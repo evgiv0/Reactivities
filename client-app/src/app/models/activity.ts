@@ -1,5 +1,3 @@
-import { StringLiteral } from "typescript";
-
 export interface IActivity{
     id: string;
     title: string;
