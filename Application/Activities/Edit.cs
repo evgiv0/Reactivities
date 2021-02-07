@@ -1,6 +1,9 @@
+using Application.Errors;
+using FluentValidation;
 using MediatR;
 using Persistance;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,6 +28,19 @@ namespace Application.Activities
             public string Venue { get; set; }
         }
 
+        public class CommandValidator : AbstractValidator<Command>
+        {
+            public CommandValidator()
+            {
+                RuleFor(x => x.Title).NotEmpty();
+                RuleFor(x => x.Description).NotEmpty();
+                RuleFor(x => x.Category).NotEmpty();
+                RuleFor(x => x.Date).NotEmpty();
+                RuleFor(x => x.City).NotEmpty();
+                RuleFor(x => x.Venue).NotEmpty();
+            }
+        }
+
         public class Handler : IRequestHandler<Command>
         {
             private readonly DataContext _context;
@@ -38,8 +54,8 @@ namespace Application.Activities
             {
                 var activity = await _context.Activities.FindAsync(request.Id);
 
-                if(activity == null)
-                    throw new Exception("Could not find activity");
+                if (activity == null)
+                    throw new RestException(HttpStatusCode.NotFound, new { activity = "Not found" });
 
                 activity.Title = request.Title ?? activity.Title;
                 activity.Category = request.Category ?? activity.Category;
@@ -53,7 +69,7 @@ namespace Application.Activities
                 if (success)
                     return Unit.Value;
 
-                throw new Exception("Problem saving cxhanges");
+                throw new Exception("Problem saving changes");
             }
         }
     }
